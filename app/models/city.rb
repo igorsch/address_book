@@ -1,27 +1,22 @@
 class City < ActiveRecord::Base
   validates :name, presence: true
+  validates :elevation, presence: true
+  
   validates :population,
     numericality: {
       greater_than_or_equal_to: 1,
       less_than_or_equal_to: 8_175_113
     }
-  validates :state, inclusion: {in: %w(AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME,
-                MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA,
+  validates :state, inclusion: {in: %w(AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME
+                MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA
                 RI SC SD TN TX UT VT VA WA WV WI WY)}
-  # validates :elevation,
-  #   numericality: {
-  #     greater_than_or_equal_to: 3315,
-  #     if: lambda { |city| city.state == 'CO' },
-  #     message: "is too low, lowest point in CO is 3838 feet."
-  #   }
 
   validate :state_elevation
   
   def state_elevation
-    if state && elevation
+    if state.present? && elevation.present?
       low_elevation = states[state].first
       high_elevation = states[state].last
-      
       if elevation.to_i < low_elevation
         errors.add(:elevation, "is too low, lowest point in #{state} is #{low_elevation}")
       elsif elevation.to_i > high_elevation
